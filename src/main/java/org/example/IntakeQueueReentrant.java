@@ -28,10 +28,6 @@ public class IntakeQueueReentrant {
             lock.unlock();
         }
     }
-    
-    private int totalQueueSize() {
-        return emergencyQueue.size() + normalQueue.size();
-    }
 
     public void produce(TestOrder order) throws InterruptedException {
         lock.lock();
@@ -39,7 +35,7 @@ public class IntakeQueueReentrant {
             if (isShuttingDown)
                 throw new InterruptedException("Cannot produce System is proceeding for shut down");
             
-            while (totalQueueSize() == capacity && !isShuttingDown) {
+            while (getQueueUsage() == capacity && !isShuttingDown) {
                 notFull.await();
             }
             
@@ -52,6 +48,7 @@ public class IntakeQueueReentrant {
                 normalQueue.add(order);
             }
             notEmpty.signalAll();
+
         } finally {
             lock.unlock();
         }
@@ -60,11 +57,11 @@ public class IntakeQueueReentrant {
     public TestOrder consume(boolean emergencyFirst) throws InterruptedException {
         lock.lock();
         try {
-            while (totalQueueSize() == 0 && !isShuttingDown) {
+            while (getQueueUsage() == 0 && !isShuttingDown) {
                 notEmpty.await();
             }
             
-            if (totalQueueSize() == 0 && isShuttingDown) {
+            if (getQueueUsage() == 0 && isShuttingDown) {
                 return null;
             }
             
@@ -85,6 +82,7 @@ public class IntakeQueueReentrant {
             
             notFull.signalAll();
             return order;
+
         } finally {
             lock.unlock();
         }
@@ -106,6 +104,7 @@ public class IntakeQueueReentrant {
                 TestOrder order = emergencyQueue.poll();
                 LogWriter.log(order.toString() + " is expired due to system timeout");
             }
+
         } finally {
             lock.unlock();
         }
