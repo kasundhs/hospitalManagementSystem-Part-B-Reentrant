@@ -18,6 +18,7 @@ public class Auditor implements Runnable {
     public void run() {
         try {
             while (running) {
+                long startTime = System.currentTimeMillis();
                 TestOrder order = processedOrderQueue.consumeForReport();
 
                 if (order != null) {
@@ -27,6 +28,10 @@ public class Auditor implements Runnable {
                     reportGenrator.reportDetails(order);
 
                     state.incrementReportCount();
+                    
+                    long endTime = System.currentTimeMillis();
+                    long timeConsumed = endTime - startTime;
+                    state.addAuditorTimeConsumption(timeConsumed);
 
                     LogWriter.log("Total Processed So far: " + state.getTotalProcessed() +
                             " and, Total Report Generates So far: " + state.getTotalReportGenerateCount());

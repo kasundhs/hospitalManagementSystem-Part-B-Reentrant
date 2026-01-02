@@ -25,6 +25,7 @@ public class Consumer implements Runnable {
     public void run() {
         try {
             while (running) {
+                long startTime = System.currentTimeMillis();
                 TestOrder order = queue.consume(state.isEmergencyPriorityEnabled());
                 if (order == null) continue;
                 try {
@@ -33,6 +34,9 @@ public class Consumer implements Runnable {
                     LogWriter.log(name + " processing " + order);
                     state.incrementProcessed();
                     processedOrderQueue.addProcessedOrder(order);
+                    long endTime = System.currentTimeMillis();
+                    long timeConsumed = endTime - startTime;
+                    state.addConsumerTimeConsumption(timeConsumed);
                 }
                 catch (Exception e){
                     LogWriter.log(order.toString()+" is started to Process. But Cannot Complete due to time Exceed.");

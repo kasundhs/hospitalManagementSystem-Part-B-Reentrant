@@ -23,6 +23,7 @@ public class Producer implements Runnable {
 
         try {
             while (running) {
+                long startTime = System.currentTimeMillis();
                 Priority priority = rnd.nextInt(10) < 5 ? Priority.EMERGENCY : Priority.NORMAL;
                 IsSpecialTest special = rnd.nextInt(10) < 2 ? IsSpecialTest.YES : IsSpecialTest.NO;
                 TestOrder order = new TestOrder(types[rnd.nextInt(types.length)], priority, special);
@@ -35,6 +36,10 @@ public class Producer implements Runnable {
                     if (priority == Priority.EMERGENCY)
                         state.setEmergencyPatientCount();
                     queue.produce(order);
+                    long endTime = System.currentTimeMillis();
+                    long timeConsumed = endTime - startTime;
+                    state.addProducerTimeConsumption(timeConsumed);
+                    state.incrementTotalRegisteredCount();
                     LogWriter.log(name + " registered " + order);
                 }
                 catch (InterruptedException e){

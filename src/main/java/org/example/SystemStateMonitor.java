@@ -14,6 +14,12 @@ public class SystemStateMonitor {
     private int totalReportGenerateCount = 0;
     private int numberOfProducerThreads = 1;
     private int numberOfConsumerThreads = 1;
+    
+    // Performance metrics
+    private int totalRegisteredCount = 0;
+    private long producerTotalTimeConsumption = 0;
+    private long consumerTotalTimeConsumption = 0;
+    private long auditorTotalTimeConsumption = 0;
 
     // Write Locks
     public void incrementProcessed() {
@@ -122,5 +128,78 @@ public class SystemStateMonitor {
     }
     public void reduceConsumersCount() {
         numberOfConsumerThreads--;
+    }
+    
+    // Performance metrics methods
+    public void incrementTotalRegisteredCount() {
+        writeLock.lock();
+        try {
+            totalRegisteredCount++;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+    
+    public int getTotalRegisteredCount() {
+        readLock.lock();
+        try {
+            return totalRegisteredCount;
+        } finally {
+            readLock.unlock();
+        }
+    }
+    
+    public void addProducerTimeConsumption(long time) {
+        writeLock.lock();
+        try {
+            producerTotalTimeConsumption += time;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+    
+    public long getProducerTotalTimeConsumption() {
+        readLock.lock();
+        try {
+            return producerTotalTimeConsumption;
+        } finally {
+            readLock.unlock();
+        }
+    }
+    
+    public void addConsumerTimeConsumption(long time) {
+        writeLock.lock();
+        try {
+            consumerTotalTimeConsumption += time;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+    
+    public long getConsumerTotalTimeConsumption() {
+        readLock.lock();
+        try {
+            return consumerTotalTimeConsumption;
+        } finally {
+            readLock.unlock();
+        }
+    }
+    
+    public void addAuditorTimeConsumption(long time) {
+        writeLock.lock();
+        try {
+            auditorTotalTimeConsumption += time;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+    
+    public long getAuditorTotalTimeConsumption() {
+        readLock.lock();
+        try {
+            return auditorTotalTimeConsumption;
+        } finally {
+            readLock.unlock();
+        }
     }
 }
