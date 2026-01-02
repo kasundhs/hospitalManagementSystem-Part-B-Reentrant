@@ -1,6 +1,8 @@
 package org.example;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SystemStateMonitor {
 
@@ -15,11 +17,11 @@ public class SystemStateMonitor {
     private int numberOfProducerThreads = 1;
     private int numberOfConsumerThreads = 1;
     
-    // Performance metrics
-    private int totalRegisteredCount = 0;
-    private long producerTotalTimeConsumption = 0;
-    private long consumerTotalTimeConsumption = 0;
-    private long auditorTotalTimeConsumption = 0;
+    // Performance metrics - using Atomic variables for thread-safe operations
+    private final AtomicInteger totalRegisteredCount = new AtomicInteger(0);
+    private final AtomicLong producerTotalTimeConsumption = new AtomicLong(0);
+    private final AtomicLong consumerTotalTimeConsumption = new AtomicLong(0);
+    private final AtomicLong auditorTotalTimeConsumption = new AtomicLong(0);
 
     // Write Locks
     public void incrementProcessed() {
@@ -130,76 +132,36 @@ public class SystemStateMonitor {
         numberOfConsumerThreads--;
     }
     
-    // Performance metrics methods
+    // Performance metrics methods - using atomic operations (no locks needed)
     public void incrementTotalRegisteredCount() {
-        writeLock.lock();
-        try {
-            totalRegisteredCount++;
-        } finally {
-            writeLock.unlock();
-        }
+        totalRegisteredCount.incrementAndGet();
     }
     
     public int getTotalRegisteredCount() {
-        readLock.lock();
-        try {
-            return totalRegisteredCount;
-        } finally {
-            readLock.unlock();
-        }
+        return totalRegisteredCount.get();
     }
     
     public void addProducerTimeConsumption(long time) {
-        writeLock.lock();
-        try {
-            producerTotalTimeConsumption += time;
-        } finally {
-            writeLock.unlock();
-        }
+        producerTotalTimeConsumption.addAndGet(time);
     }
     
     public long getProducerTotalTimeConsumption() {
-        readLock.lock();
-        try {
-            return producerTotalTimeConsumption;
-        } finally {
-            readLock.unlock();
-        }
+        return producerTotalTimeConsumption.get();
     }
     
     public void addConsumerTimeConsumption(long time) {
-        writeLock.lock();
-        try {
-            consumerTotalTimeConsumption += time;
-        } finally {
-            writeLock.unlock();
-        }
+        consumerTotalTimeConsumption.addAndGet(time);
     }
     
     public long getConsumerTotalTimeConsumption() {
-        readLock.lock();
-        try {
-            return consumerTotalTimeConsumption;
-        } finally {
-            readLock.unlock();
-        }
+        return consumerTotalTimeConsumption.get();
     }
     
     public void addAuditorTimeConsumption(long time) {
-        writeLock.lock();
-        try {
-            auditorTotalTimeConsumption += time;
-        } finally {
-            writeLock.unlock();
-        }
+        auditorTotalTimeConsumption.addAndGet(time);
     }
     
     public long getAuditorTotalTimeConsumption() {
-        readLock.lock();
-        try {
-            return auditorTotalTimeConsumption;
-        } finally {
-            readLock.unlock();
-        }
+        return auditorTotalTimeConsumption.get();
     }
 }
